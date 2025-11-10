@@ -1,0 +1,444 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ECLYPSE | AI Chat</title>
+  <style>
+    /* ===== ESTILO GERAL ===== */
+    body {
+      margin: 0;
+      font-family: 'Poppins', sans-serif;
+      background: radial-gradient(circle at 20% 20%, #0a0a0a, #000);
+      color: #fff;
+      height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+
+    /* ===== TELA DE LOGIN ===== */
+    #login-screen {
+      background: rgba(20, 20, 25, 0.95);
+      box-shadow: 0 0 25px #8b5cf6;
+      border-radius: 20px;
+      padding: 40px;
+      width: 340px;
+      text-align: center;
+      animation: fadeIn 0.6s ease;
+    }
+
+    #login-screen h1 {
+      color: #8b5cf6;
+      text-shadow: 0 0 12px #8b5cf6;
+      margin-bottom: 30px;
+    }
+
+    #login-screen input {
+      width: 100%;
+      padding: 12px;
+      margin: 10px 0;
+      border: none;
+      border-radius: 10px;
+      background: #111;
+      color: #fff;
+      outline: none;
+      font-size: 15px;
+    }
+
+    #login-screen button {
+      margin-top: 15px;
+      background: linear-gradient(90deg, #6d28d9, #8b5cf6);
+      border: none;
+      border-radius: 10px;
+      padding: 12px 20px;
+      color: #fff;
+      font-size: 16px;
+      font-weight: bold;
+      cursor: pointer;
+      box-shadow: 0 0 15px #8b5cf6;
+      transition: 0.3s;
+    }
+
+    #login-screen button:hover {
+      background: linear-gradient(90deg, #8b5cf6, #a78bfa);
+      box-shadow: 0 0 25px #a78bfa;
+    }
+
+    /* ===== INTERFACE DE CHAT ===== */
+    #chat-screen {
+      display: none;
+      flex-direction: column;
+      width: 100%;
+      height: 100%;
+      position: relative;
+      background: url("./images/wallpaper-eclypse.jpg") no-repeat center center fixed;
+      background-size: cover;
+    }
+
+    /* Camada escura por cima do fundo */
+    #chat-screen::before {
+      content: "";
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.6); /* Escurece a imagem */
+      z-index: 0;
+    }
+
+    /* Conteúdo acima da camada escura */
+    #chat-screen * {
+      position: relative;
+      z-index: 1;
+    }
+
+    header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: rgba(10, 10, 15, 0.9);
+      border-bottom: 1px solid #222;
+      padding: 15px 25px;
+      box-shadow: 0 0 20px #8b5cf6 inset;
+    }
+
+    .logo {
+      font-size: 24px;
+      font-weight: bold;
+      color: #8b5cf6;
+      text-shadow: 0 0 10px #8b5cf6;
+      letter-spacing: 3px;
+    }
+
+    .icons {
+      display: flex;
+      align-items: center;
+      gap: 15px;
+    }
+
+    .icon {
+      cursor: pointer;
+      font-size: 20px;
+      color: #ddd;
+      transition: 0.2s;
+    }
+
+    .icon:hover {
+      color: #8b5cf6;
+    }
+
+    main {
+      flex: 1;
+      padding: 20px;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      scroll-behavior: smooth;
+    }
+
+    .message {
+      max-width: 70%;
+      padding: 12px 18px;
+      border-radius: 18px;
+      line-height: 1.4;
+      animation: fadeIn 0.3s ease;
+    }
+
+    .user {
+      align-self: flex-end;
+      background: #8b5cf6;
+      color: #fff;
+      box-shadow: 0 0 10px #8b5cf6;
+    }
+
+    .bot {
+      align-self: flex-start;
+      background: rgba(20, 20, 25, 0.85);
+      border: 1px solid #333;
+      color: #cfcfcf;
+      box-shadow: 0 0 8px #8b5cf6;
+    }
+
+    footer {
+      display: flex;
+      border-top: 1px solid #222;
+      background: rgba(15, 15, 20, 0.95);
+      padding: 10px;
+    }
+
+    input {
+      flex: 1;
+      padding: 12px;
+      border: none;
+      outline: none;
+      border-radius: 10px;
+      background: #111;
+      color: #fff;
+      font-size: 16px;
+      margin-right: 10px;
+      box-shadow: inset 0 0 10px #000;
+    }
+
+    button {
+      background: linear-gradient(90deg, #6d28d9, #8b5cf6);
+      border: none;
+      border-radius: 10px;
+      padding: 12px 20px;
+      color: #fff;
+      font-size: 16px;
+      cursor: pointer;
+      font-weight: bold;
+      box-shadow: 0 0 15px #8b5cf6;
+      transition: 0.2s;
+    }
+
+    button:hover {
+      background: linear-gradient(90deg, #8b5cf6, #a78bfa);
+      box-shadow: 0 0 25px #a78bfa;
+    }
+
+    /* ===== MENU DE CONFIGURAÇÕES ===== */
+    #menu {
+      position: absolute;
+      top: 70px;
+      right: 20px;
+      background: #1a1a1a;
+      border: 1px solid #333;
+      border-radius: 10px;
+      padding: 15px;
+      width: 180px;
+      box-shadow: 0 0 15px #8b5cf6;
+      display: none;
+      animation: fadeIn 0.2s ease;
+    }
+
+    #menu h3 {
+      margin: 0 0 10px;
+      color: #8b5cf6;
+      font-size: 16px;
+    }
+
+    #menu button {
+      width: 100%;
+      background: #8b5cf6;
+      border: none;
+      border-radius: 8px;
+      padding: 8px;
+      color: white;
+      margin-top: 5px;
+      cursor: pointer;
+      transition: 0.2s;
+    }
+
+    #menu button:hover {
+      background: #a78bfa;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+  </style>
+</head>
+
+<body>
+  <!-- ===== TELA DE LOGIN ===== -->
+  <div id="login-screen">
+    <h1>☾ ECLYPSE AI ☾</h1>
+    <input type="text" id="username" placeholder="Usuário">
+    <input type="password" id="password" placeholder="Senha">
+    <button id="loginBtn">Entrar</button>
+  </div>
+
+  <!-- ===== INTERFACE DE CHAT ===== -->
+  <div id="chat-screen">
+    <header>
+      <div class="logo">☾ ECLYPSE ☾</div>
+      <div class="icons">
+        <div id="menuBtn" class="icon">☰</div>
+        <div class="icon">👤</div>
+      </div>
+      <div id="menu">
+        <h3>Configurações</h3>
+        <button>Perfil</button>
+        <button>Tema Escuro</button>
+        <button id="logoutBtn">Sair</button>
+      </div>
+    </header>
+
+    <main id="chat">
+      <div class="message bot">Olá, eu sou a <b>ECLYPSE</b> — sua assistente de inteligência artificial. 🌒</div>
+    </main>
+
+    <footer>
+      <input id="userInput" type="text" placeholder="Digite sua mensagem..." />
+      <button id="sendBtn">Enviar</button>
+    </footer>
+  </div>
+
+ <script>
+    const loginScreen = document.getElementById("login-screen");
+    const chatScreen = document.getElementById("chat-screen");
+    const loginBtn = document.getElementById("loginBtn");
+    const logoutBtn = document.getElementById("logoutBtn");
+    const menuBtn = document.getElementById("menuBtn");
+    const menu = document.getElementById("menu");
+    const chat = document.getElementById("chat");
+    const input = document.getElementById("userInput");
+    const sendBtn = document.getElementById("sendBtn");
+
+    // Endereço do seu servidor Flask (Python)
+    const API_URL = 'http://127.0.0.1:5000';
+
+    // ===== LOGIN SIMPLES (Mantido) =====
+    loginBtn.addEventListener("click", () => {
+      const user = document.getElementById("username").value.trim();
+      const pass = document.getElementById("password").value.trim();
+
+      // Implementação de login simples (apenas verifica se não está vazio)
+      if (user && pass) {
+        loginScreen.style.display = "none";
+        chatScreen.style.display = "flex";
+      } else {
+        alert("Preencha usuário e senha!");
+      }
+    });
+
+    // ===== LOGOUT (Mantido) =====
+    logoutBtn.addEventListener("click", () => {
+      chatScreen.style.display = "none";
+      loginScreen.style.display = "block";
+      menu.style.display = "none";
+    });
+
+    // ===== MENU (Mantido) =====
+    menuBtn.addEventListener("click", () => {
+      menu.style.display = menu.style.display === "block" ? "none" : "block";
+    });
+
+    // Função auxiliar para adicionar mensagens
+    function addMessage(text, sender) {
+      const msg = document.createElement("div");
+      msg.classList.add("message", sender);
+      msg.innerHTML = text; // Usando innerHTML para aceitar tags como <b>
+      chat.appendChild(msg);
+      chat.scrollTop = chat.scrollHeight;
+    }
+
+    // ==========================================================
+    // ===== CHAT COMUNICAÇÃO COM O BACKEND PYTHON (GEMINI) =====
+    // ==========================================================
+
+    /**
+     * Envia a mensagem do usuário para o servidor Flask/Python,
+     * que por sua vez chama a API do Gemini.
+     */
+    async function getBotResponse(userText) {
+      
+      // 1. Adiciona a mensagem do usuário (já feita em sendMessage)
+      
+      // 2. Cria e exibe a mensagem de "Digitando..."
+      const loadingMsg = document.createElement("div");
+      loadingMsg.classList.add("message", "bot");
+      loadingMsg.innerHTML = "ECLYPSE está pensando... 🧠";
+      loadingMsg.id = "loading-message";
+      chat.appendChild(loadingMsg);
+      chat.scrollTop = chat.scrollHeight;
+
+      try {
+        // Faz a requisição POST para a rota /send_message do Flask
+        const response = await fetch(`${API_URL}/send_message`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({ message: userText })
+        });
+
+        // Verifica se a resposta do servidor foi bem-sucedida
+        if (!response.ok) {
+            const errorData = await response.json();
+            throw new Error(errorData.response || `Erro do servidor: ${response.status}`);
+        }
+
+        const data = await response.json();
+        const botResponse = data.response;
+
+        // 3. Remove a mensagem de carregamento
+        const existingLoading = document.getElementById("loading-message");
+        if (existingLoading) {
+            existingLoading.remove();
+        }
+
+        // 4. Adiciona a resposta real do bot
+        addMessage(botResponse, "bot");
+
+      } catch (error) {
+        console.error('Erro na comunicação com o backend:', error);
+        
+        // 3. Remove a mensagem de carregamento, mesmo em caso de erro
+        const existingLoading = document.getElementById("loading-message");
+        if (existingLoading) {
+            existingLoading.remove();
+        }
+        
+        // 4. Adiciona uma mensagem de erro ao chat
+        addMessage(`❌ Erro de conexão: Não foi possível obter uma resposta. Certifique-se de que o servidor Python está rodando em ${API_URL}. Detalhes: ${error.message}`, "bot");
+      }
+    }
+
+    // Função que inicia o processo de envio
+    function sendMessage() {
+      const text = input.value.trim();
+      if (!text) return;
+
+      // Adiciona a mensagem do usuário imediatamente
+      addMessage(text, "user");
+      input.value = "";
+
+      // Chama a função que se comunica com o backend
+      getBotResponse(text);
+    }
+
+    // Adiciona a funcionalidade de limpar o chat
+    async function clearChatHistory() {
+        if (!confirm("Tem certeza que deseja limpar o histórico do chat? Uma nova sessão com o Gemini será iniciada.")) {
+            return;
+        }
+        
+        try {
+            // Chama a rota /clear_chat do Flask
+            const response = await fetch(`${API_URL}/clear_chat`, {
+                method: 'POST'
+            });
+
+            if(response.ok) {
+                // Limpa o chat visualmente
+                chat.innerHTML = '<div class="message bot">Olá, eu sou a <b>ECLYPSE</b> — sua assistente de inteligência artificial. 🌒</div>';
+                alert("Histórico de conversa limpo! A ECLYPSE está pronta para uma nova conversa.");
+            } else {
+                alert("Falha ao limpar o histórico do chat no servidor. Verifique o console.");
+            }
+        } catch (error) {
+            console.error('Erro ao tentar limpar o chat:', error);
+            alert("Erro de conexão ao tentar limpar o chat. Servidor Python indisponível.");
+        }
+    }
+
+    // Adiciona o botão "Limpar Chat" ao Menu de Configurações
+    const clearChatBtn = document.createElement("button");
+    clearChatBtn.textContent = "Limpar Chat";
+    clearChatBtn.addEventListener("click", clearChatHistory);
+    menu.insertBefore(clearChatBtn, logoutBtn); // Adiciona antes do botão Sair
+
+    // Event listeners para enviar mensagem
+    sendBtn.addEventListener("click", sendMessage);
+    input.addEventListener("keypress", (e) => {
+      if (e.key === "Enter") sendMessage();
+    });
+</script>
+</body>
+</html>
